@@ -32,13 +32,13 @@ export default async function ProfilePage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  // Lots won (bids where lot.status = SOLD and they are the highest bidder)
-  const { data: lotsWon } = await supabase
-    .from("bids")
-    .select("id, amount, created_at, lot_id, lots!inner(id, title, status, current_price)")
-    .eq("user_id", user.id)
-    .eq("lots.status", "SOLD")
-    .order("amount", { ascending: false });
+  // Orders (lots won) — user's own orders
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("id, lot_id, total_due, payment_status, tracking_id, courier, lots(id, title)")
+    .eq("winner_id", user.id)
+    .order("created_at", { ascending: false });
+
 
   // Proxy bids active
   const { data: proxyBids } = await supabase
@@ -119,24 +119,40 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* Lots won */}
-      {(lotsWon?.length ?? 0) > 0 && (
+      {/* Orders (Lots Won) */}
+      {(orders?.length ?? 0) > 0 && (
         <section className="mb-6 rounded-2xl border border-obsidian-700 bg-obsidian-800 p-6">
           <h2 className="mb-4 font-body text-xs font-semibold uppercase tracking-widest text-platinum-500">
-            Lots Won
+            My Orders
           </h2>
           <div className="flex flex-col gap-2">
-            {lotsWon!.map((bid) => {
-              const lot = bid.lots as unknown as { id: string; title: string } | null;
+            {orders!.map((order) => {
+              const lot = order.lots as unknown as { id: string; title: string } | null;
+              const isActionNeeded = order.payment_status === "pending_payment";
               return (
-                <div key={bid.id} className="flex items-center justify-between rounded-xl border border-gold-500/20 bg-gold-500/5 px-4 py-2.5">
-                  <Link href={`/lot/${bid.lot_id}`} className="font-body text-sm text-platinum-200 hover:text-gold-400 transition">
-                    {lot?.title ?? bid.lot_id}
-                  </Link>
-                  <span className="font-display text-sm font-bold text-gold-400">
-                    {formatPrice(bid.amount)}
-                  </span>
-                </div>
+                <Link
+                  key={order.id}
+                  href={`/orders/${order.id}`}
+                  className="flex items-center justify-between rounded-xl border border-gold-500/20 bg-gold-500/5 px-4 py-2.5 hover:bg-gold-500/10 transition"
+                >
+                  <div>
+                    <p className="font-body text-sm text-platinum-200">{lot?.title ?? order.lot_id}</p>
+                    <p className="font-body text-[10px] text-platinum-500">
+                      {order.payment_status.replace(/_/g, " ")}
+                      {order.tracking_id && ` · ${order.courier ?? ""} ${order.tracking_id}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-sm font-bold text-gold-400">
+                      {formatPrice(order.total_due)}
+                    </span>
+                    {isActionNeeded && (
+                      <span className="rounded-full bg-auction-pending/20 px-2 py-0.5 font-body text-[10px] font-bold text-auction-pending">
+                        Pay Now
+                      </span>
+                    )}
+                  </div>
+                </Link>
               );
             })}
           </div>

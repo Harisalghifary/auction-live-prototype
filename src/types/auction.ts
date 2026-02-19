@@ -62,6 +62,35 @@ export const ProxyBidSchema = z.object({
 });
 export type ProxyBid = z.infer<typeof ProxyBidSchema>;
 
+export const PaymentStatusSchema = z.enum([
+  "pending_payment",
+  "payment_submitted",
+  "paid",
+  "shipped",
+  "delivered",
+]);
+export type PaymentStatus = z.infer<typeof PaymentStatusSchema>;
+
+export const OrderSchema = z.object({
+  id: z.string().uuid(),
+  lot_id: z.string().uuid(),
+  winner_id: z.string().uuid(),
+  final_amount: z.number(),
+  buyers_premium: z.number(),
+  total_due: z.number(),
+  payment_status: PaymentStatusSchema,
+  bank_reference: z.string().nullable(),
+  payment_notes: z.string().nullable(),
+  tracking_id: z.string().nullable(),
+  courier: z.string().nullable(),
+  admin_notes: z.string().nullable(),
+  paid_at: z.string().datetime({ offset: true }).nullable(),
+  shipped_at: z.string().datetime({ offset: true }).nullable(),
+  delivered_at: z.string().datetime({ offset: true }).nullable(),
+  created_at: z.string().datetime({ offset: true }),
+});
+export type Order = z.infer<typeof OrderSchema>;
+
 // ─── API Request Schemas ──────────────────────────────────────────────────────
 
 export const PlaceBidRequestSchema = z.object({
