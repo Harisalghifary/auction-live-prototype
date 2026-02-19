@@ -8,17 +8,22 @@ let ablyInstance: Ably.Realtime | null = null;
  */
 export function getAblyClient(): Ably.Realtime {
   if (!ablyInstance) {
-    const ablyKey = process.env.NEXT_PUBLIC_ABLY_API_KEY!;
+    const ablyKey = process.env.NEXT_PUBLIC_ABLY_API_KEY;
 
-    // The env var may be either a raw API key (appId:secret format)
-    // or a JWT token. Detect by checking for the colon separator.
-    const isApiKey = ablyKey.includes(":");
-
-    ablyInstance = new Ably.Realtime(
-      isApiKey
-        ? { key: ablyKey, clientId: "auction-live-client" }
-        : { token: ablyKey, clientId: "auction-live-client" }
-    );
+    ablyInstance = new Ably.Realtime({
+      // Prefer server-issued short-lived tokens via /api/ably-token.
+      // Falls back to the static key/JWT only for local dev without a server.
+      authUrl: "/api/ably-token",
+      authMethod: "GET",
+      // Fallback: if authUrl fails (e.g. unauthenticated), use the env var
+      ...(ablyKey?.includes(":")
+        ? { key: ablyKey }
+        : ablyKey
+        ? { token: ablyKey }
+        : {}),
+      clientId: "auction-live-client",
+      autoConnect: true,
+    });
   }
   return ablyInstance;
 }

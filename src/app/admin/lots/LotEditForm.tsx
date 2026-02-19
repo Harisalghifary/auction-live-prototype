@@ -8,6 +8,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { LotImageUploader } from "@/components/LotImageUploader";
 
 const STATUSES = ["PRE_BID", "LIVE", "PAUSED", "SOLD"] as const;
 
@@ -20,11 +21,12 @@ interface LotFormData {
   status: string;
   youtube_video_id: string;
   live_end_at: string;
+  image_urls: string[];
 }
 
 interface LotEditFormProps {
   lotId?: string;
-  initial?: Partial<LotFormData>;
+  initial?: Partial<LotFormData> & { image_urls?: string[] };
 }
 
 const formSchema = z.object({
@@ -49,6 +51,7 @@ export function LotEditForm({ lotId, initial }: LotEditFormProps) {
     live_end_at: initial?.live_end_at
       ? new Date(initial.live_end_at).toISOString().slice(0, 16)
       : "",
+    image_urls: initial?.image_urls ?? [],
   });
 
   const update = (key: keyof LotFormData, value: string | number) =>
@@ -157,6 +160,18 @@ export function LotEditForm({ lotId, initial }: LotEditFormProps) {
         <input id="lot-endtime" type="datetime-local" className={inputCls} value={form.live_end_at} onChange={(e) => update("live_end_at", e.target.value)} />
         <p className="mt-1 font-body text-xs text-platinum-500">Required when status is LIVE.</p>
       </div>
+
+      {/* Images */}
+      {lotId && (
+        <div>
+          <label className={labelCls}>Lot Images</label>
+          <LotImageUploader
+            lotId={lotId}
+            existingUrls={form.image_urls}
+            onUrlsChange={(urls) => setForm((f) => ({ ...f, image_urls: urls }))}
+          />
+        </div>
+      )}
 
       {/* YouTube */}
       <div>

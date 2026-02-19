@@ -11,6 +11,7 @@ const LotPayloadSchema = z.object({
   status: z.enum(["PRE_BID", "LIVE", "PAUSED", "SOLD"]),
   youtube_video_id: z.string().optional().nullable(),
   live_end_at: z.string().datetime({ offset: true }).optional().nullable(),
+  image_urls: z.array(z.string().url()).optional().nullable(),
 });
 
 async function guardAdmin(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>) {

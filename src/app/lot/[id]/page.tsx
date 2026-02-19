@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { LotSchema } from "@/types/auction";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -8,6 +8,8 @@ import { CountdownTimer } from "@/components/CountdownTimer";
 import { BidButton } from "@/components/BidButton";
 import { KycGuard } from "@/components/KycGuard";
 import { PreBidForm } from "@/components/PreBidForm";
+import { LotImageGallery } from "@/components/LotImageGallery";
+
 import { formatPrice, getBidIncrement, applyBuyersPremium } from "@/lib/bidUtils";
 
 interface LotPageProps {
@@ -61,36 +63,10 @@ export default async function LotPage({ params }: LotPageProps) {
       <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
         {/* Left: Images + Details */}
         <div>
-          {/* Main Image */}
-          <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-2xl bg-obsidian-800">
-            {lot.image_urls?.[0] ? (
-              <Image
-                src={lot.image_urls[0]}
-                alt={lot.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 60vw"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-platinum-500 opacity-30">
-                <svg className="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnail strip */}
-          {(lot.image_urls?.length ?? 0) > 1 && (
-            <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-              {lot.image_urls!.map((url, i) => (
-                <div key={i} className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-obsidian-800">
-                  <Image src={url} alt={`${lot.title} — image ${i + 1}`} fill className="object-cover" sizes="80px" />
-                </div>
-              ))}
-            </div>
-          )}
+          <LotImageGallery
+            imageUrls={lot.image_urls ?? []}
+            title={lot.title}
+          />
 
           {/* Lot details */}
           <div>
