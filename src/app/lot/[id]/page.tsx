@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { LotSchema } from "@/types/auction";
@@ -137,12 +138,25 @@ export default async function LotPage({ params }: LotPageProps) {
 
             {/* Bid CTA */}
             {isLive ? (
-              <KycGuard>
-                <BidButton
-                  lotId={lot.id}
-                  currentPrice={currentBid}
-                />
-              </KycGuard>
+              <>
+                {/* Enter Live Room — primary CTA for LIVE lots */}
+                <Link
+                  href={`/auction/${lot.id}`}
+                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-auction-live py-3 font-body font-semibold text-white transition hover:bg-red-600"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                  </span>
+                  Enter Live Room
+                </Link>
+                <KycGuard>
+                  <BidButton
+                    lotId={lot.id}
+                    currentPrice={currentBid}
+                  />
+                </KycGuard>
+              </>
             ) : isPreBid ? (
               <KycGuard>
                 <PreBidForm

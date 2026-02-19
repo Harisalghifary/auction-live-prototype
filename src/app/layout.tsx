@@ -35,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
-      <body className="min-h-screen bg-obsidian-950 font-body text-platinum-200 antialiased">
+      <body suppressHydrationWarning className="min-h-screen bg-obsidian-950 font-body text-platinum-200 antialiased">
         <NavBar />
         <main>{children}</main>
 

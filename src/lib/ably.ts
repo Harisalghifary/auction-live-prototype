@@ -8,10 +8,17 @@ let ablyInstance: Ably.Realtime | null = null;
  */
 export function getAblyClient(): Ably.Realtime {
   if (!ablyInstance) {
-    ablyInstance = new Ably.Realtime({
-      key: process.env.NEXT_PUBLIC_ABLY_API_KEY!,
-      clientId: "auction-live-client",
-    });
+    const ablyKey = process.env.NEXT_PUBLIC_ABLY_API_KEY!;
+
+    // The env var may be either a raw API key (appId:secret format)
+    // or a JWT token. Detect by checking for the colon separator.
+    const isApiKey = ablyKey.includes(":");
+
+    ablyInstance = new Ably.Realtime(
+      isApiKey
+        ? { key: ablyKey, clientId: "auction-live-client" }
+        : { token: ablyKey, clientId: "auction-live-client" }
+    );
   }
   return ablyInstance;
 }

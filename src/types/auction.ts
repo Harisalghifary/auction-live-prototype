@@ -24,7 +24,7 @@ export const ProfileSchema = z.object({
   username: z.string().min(3).max(30).nullable(),
   is_verified_bidder: z.boolean().default(false),
   avatar_url: z.string().url().nullable(),
-  created_at: z.string().datetime(),
+  created_at: z.string().datetime({ offset: true }),
 });
 export type Profile = z.infer<typeof ProfileSchema>;
 
@@ -37,9 +37,10 @@ export const LotSchema = z.object({
   current_price: z.number().nonnegative(),
   reserve_price: z.number().nonnegative(),
   status: AuctionStatusSchema,
-  live_end_at: z.string().datetime().nullable(),
+  live_end_at: z.string().datetime({ offset: true }).nullable(),
   image_urls: z.array(z.string().url()).nullable(),
-  created_at: z.string().datetime(),
+  youtube_video_id: z.string().nullable().optional(),
+  created_at: z.string().datetime({ offset: true }),
 });
 export type Lot = z.infer<typeof LotSchema>;
 
@@ -49,7 +50,7 @@ export const BidSchema = z.object({
   user_id: z.string().uuid(),
   amount: z.number().positive(),
   is_proxy_bid: z.boolean().default(false),
-  created_at: z.string().datetime(),
+  created_at: z.string().datetime({ offset: true }),
 });
 export type Bid = z.infer<typeof BidSchema>;
 
