@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
+import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,23 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body className="min-h-screen bg-obsidian-950 font-body text-platinum-200 antialiased">
-        {/* Top nav */}
-        <header className="sticky top-0 z-50 border-b border-obsidian-700 bg-obsidian-950/80 backdrop-blur-md">
-          <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-            <a href="/" className="font-display text-xl font-bold tracking-wide text-gold-400">
-              Anti-Gravity<span className="text-platinum-300"> Auction</span>
-            </a>
-            <div className="flex items-center gap-4">
-              <a
-                href="/login"
-                className="rounded-lg border border-obsidian-700 px-4 py-2 font-body text-sm text-platinum-300 transition hover:border-gold-600/50 hover:text-gold-400"
-              >
-                Sign In
-              </a>
-            </div>
-          </nav>
-        </header>
-
+        <NavBar />
         <main>{children}</main>
 
         <footer className="mt-24 border-t border-obsidian-700 py-8 text-center">

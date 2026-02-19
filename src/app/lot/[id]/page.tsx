@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { BidButton } from "@/components/BidButton";
 import { KycGuard } from "@/components/KycGuard";
+import { PreBidForm } from "@/components/PreBidForm";
 import { formatPrice, getBidIncrement, applyBuyersPremium } from "@/lib/bidUtils";
 
 interface LotPageProps {
@@ -26,6 +27,7 @@ export default async function LotPage({ params }: LotPageProps) {
 
   const lot = LotSchema.parse(data);
   const isLive = lot.status === "LIVE";
+  const isPreBid = lot.status === "PRE_BID";
   const increment = getBidIncrement(lot.current_price);
   const currentBid = lot.current_price || lot.starting_price;
   const buyersPremium = applyBuyersPremium(currentBid);
@@ -37,6 +39,21 @@ export default async function LotPage({ params }: LotPageProps) {
     .eq("lot_id", id)
     .order("created_at", { ascending: false })
     .limit(10);
+
+  // Fetch current user's proxy bid (if any) for PRE_BID lots
+  let existingProxyBid: number | null = null;
+  if (isPreBid) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: proxyBid } = await supabase
+        .from("proxy_bids")
+        .select("max_amount")
+        .eq("lot_id", id)
+        .eq("user_id", user.id)
+        .single();
+      existingProxyBid = proxyBid?.max_amount ?? null;
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -126,11 +143,13 @@ export default async function LotPage({ params }: LotPageProps) {
                   currentPrice={currentBid}
                 />
               </KycGuard>
-            ) : lot.status === "PRE_BID" ? (
+            ) : isPreBid ? (
               <KycGuard>
-                <div className="rounded-xl border border-auction-pre/30 bg-auction-pre/10 p-4 text-center font-body text-sm text-auction-pre">
-                  Pre-bidding opens soon. You will receive a notification when this lot goes live.
-                </div>
+                <PreBidForm
+                  lotId={lot.id}
+                  startingPrice={currentBid}
+                  existingProxyBid={existingProxyBid}
+                />
               </KycGuard>
             ) : (
               <div className="rounded-xl border border-obsidian-700 bg-obsidian-900 p-4 text-center font-body text-sm text-platinum-500">
@@ -147,7 +166,7 @@ export default async function LotPage({ params }: LotPageProps) {
                   Bid History
                 </h3>
                 <ul className="space-y-2">
-                  {recentBids!.map((bid, i) => (
+                  {(recentBids as { id: string; amount: number; user_id: string; created_at: string }[]).map((bid, i) => (
                     <li key={bid.id} className="flex items-center justify-between font-body text-sm">
                       <span className="text-platinum-500">
                         Bidder ···{bid.user_id.slice(-4)}
