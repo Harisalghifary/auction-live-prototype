@@ -9,7 +9,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED_ROUTES = ["/lot", "/profile", "/auction", "/admin"];
+const PROTECTED_ROUTES = ["/lot", "/profile", "/auction", "/admin", "/orders"];
 
 
 export async function proxy(request: NextRequest) {
