@@ -15,11 +15,11 @@ interface BidButtonProps {
 }
 
 export function BidButton({ lotId, currentPrice, disabled }: BidButtonProps) {
-  const { bidState, setBidState, status } = useAuctionStore((s) => ({
-    bidState: s.bidState,
-    setBidState: s.setBidState,
-    status: s.status,
-  }));
+  const bidState    = useAuctionStore((s) => s.bidState);
+  const setBidState = useAuctionStore((s) => s.setBidState);
+  const status      = useAuctionStore((s) => s.status);
+  const bidError    = useAuctionStore((s) => s.bidError);
+
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -126,9 +126,9 @@ export function BidButton({ lotId, currentPrice, disabled }: BidButtonProps) {
       </AnimatePresence>
 
       {/* Error message */}
-      {bidState === "error" && useAuctionStore.getState().bidError && (
+      {bidState === "error" && bidError && (
         <p className="font-body text-sm text-auction-live" role="alert">
-          {useAuctionStore.getState().bidError}
+          {bidError}
         </p>
       )}
 

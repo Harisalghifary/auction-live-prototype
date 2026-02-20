@@ -45,7 +45,8 @@ export function KycGuard({ children, softBlock = false }: KycGuardProps) {
       setStatus("ok");
     }
     check();
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (status === "loading") {
     return (
