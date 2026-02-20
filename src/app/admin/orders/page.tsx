@@ -13,10 +13,22 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function AdminOrdersPage() {
   const supabase = await createSupabaseServerClient();
 
-  const { data: orders } = await supabase
+  // 1. Fetch orders + lots
+  const { data: orders, error } = await supabase
     .from("orders")
-    .select("*, lots(id, title), profiles!winner_id(username)")
+    .select("*, lots(id, title)")
     .order("created_at", { ascending: false });
+
+  if (error) console.error("[AdminOrdersPage] Fetch error:", error);
+
+  // 2. Fetch profiles for winners in batch to avoid join issues
+  const winnerIds = Array.from(new Set(orders?.map(o => o.winner_id) ?? []));
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("id", winnerIds);
+
+  const profileMap = Object.fromEntries(profiles?.map(p => [p.id, p]) ?? []);
 
   const pendingCount = orders?.filter((o) => o.payment_status === "payment_submitted").length ?? 0;
 
@@ -44,7 +56,7 @@ export default async function AdminOrdersPage() {
 
             {orders.map((order) => {
               const lot = order.lots as { id: string; title: string } | null;
-              const winner = order.profiles as { username: string | null } | null;
+              const winner = profileMap[order.winner_id];
               return (
                 <div key={order.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-5 py-3.5">
                   <div>

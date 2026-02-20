@@ -20,16 +20,23 @@ export default async function AdminOrderDetailPage({ params }: AdminOrderDetailP
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
+  // 1. Fetch order + lot
   const { data: order, error } = await supabase
     .from("orders")
-    .select("*, lots(id, title, image_urls), profiles!winner_id(id, username)")
+    .select("*, lots(id, title, image_urls)")
     .eq("id", id)
     .single();
 
   if (error || !order) notFound();
 
+  // 2. Fetch winner profile separately to avoid join issues
+  const { data: winner } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .eq("id", order.winner_id)
+    .single();
+
   const lot = order.lots as { id: string; title: string; image_urls: string[] | null } | null;
-  const winner = order.profiles as { id: string; username: string | null } | null;
 
   return (
     <div className="mx-auto max-w-2xl">
